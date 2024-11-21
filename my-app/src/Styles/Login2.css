@@ -1,0 +1,96 @@
+.Login-Main-Container{
+    display: grid;
+    justify-content: center;
+    height: 37.3rem;
+    background: white;
+}
+
+.Inner-Container-Login{
+    margin-top: 10rem;
+}
+.Login-radio-group{
+    outline-style: solid;  
+    outline-width: 1px; 
+    outline-color: #445c5f3a; 
+    margin-top: 0rem;
+    margin-bottom: 2rem;
+    background-color: white;
+    border-radius: 5px;
+}
+.Login-radio-group:hover{
+    background-color: #445c5f3a;
+}
+.Logo-Login{
+    margin-top: -3rem;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 2rem;
+}
+.ImageMetaMask{
+    margin-left: 0.5rem;
+    width: 28px;
+    height: 28px;
+    margin-right: 0.5rem;
+    
+}
+
+
+
+
+@property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+:root {
+    --gradient-angle: 0deg; 
+    --clr-1: #052b2f;
+    --clr-3: #0e4b50;
+    --clr-4: #2d8f85;
+    --clr-5: #204e74;
+}
+
+.Login-Button-Client {
+    position: relative;
+    margin-top: 0rem;
+    padding: 10px 30px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    z-index: 1; 
+    border-radius: 12px;
+    background: var(--clr-1);
+    overflow: hidden; 
+    font-size: 1rem;
+    color: white;
+}
+
+.Login-Button-Client::after{
+    content: "";
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: conic-gradient(
+        from var(--gradient-angle),
+        var(--clr-3),
+        var(--clr-4),
+        var(--clr-5),
+        var(--clr-4),
+        var(--clr-3)
+    );
+    font-size: 15px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: rotation 20s linear infinite;
+    z-index: -1; 
+    pointer-events: none; 
+}
+
+@keyframes rotation {
+   0% { --gradient-angle: 0deg;}
+   100% {  --gradient-angle: 360deg; }
+}

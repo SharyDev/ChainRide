@@ -1,0 +1,116 @@
+.HomeMainComponent{
+    
+    background-image: url("../Assets/Images/Background.png");
+    background-size: 100% 100%;
+    
+    background: rgb(18, 17, 22) ;
+}
+.HomeCar-Image{
+  width: 700px;
+  height: 450px;
+}
+.HomeInnerComponent{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.Home-RideButton{
+    background-color: rgb(232, 248, 3);
+    color: black;
+    border: none;
+    width: 6rem;
+    height: 1.5rem;
+}
+
+.Home-Intro{
+    margin-top: 9rem;
+    color: white;
+    font-size: 20px;
+}
+
+.Home-SpamText{
+    
+    font-weight: 200;
+}
+
+.HomeImage{
+    margin-top: 2rem;
+}
+
+.HomePage-Logo{
+    width: 550px;
+    margin-right: 1rem;
+    height: 450px;
+}
+
+.Home-Symbol{
+    display: grid;
+    justify-content: center;
+    color: white;
+    
+}
+
+.Down-Arrow-1{
+    margin-top: 2rem;
+    width: 25px;
+    height: 25px;
+    animation-name: colorChange;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: linear;
+}
+
+.Down-Arrow-2{
+    margin-top: -13px;
+    width: 25px;
+    height: 25px;
+    animation-name: colorChange;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: linear;
+}
+
+@keyframes colorChange{
+    0%{
+      color: white;
+    }
+   
+    100%{
+      color: #00DDEB;
+    }
+  }
+  .Part2MainContainer{
+    margin-top: 2rem;
+    background: rgb(18, 17, 22);
+    color: white;
+    height: 26rem;
+  }
+
+  .Globe-Container{
+    
+    background: rgb(18, 17, 22);
+  }
+.Part2-Para-Container{
+    display: grid;
+    justify-content: center;
+    color: white;
+    background: rgb(18, 17, 22);
+}
+  .Part2-Para{
+    margin-left: 10rem;
+    margin-right: 10rem;
+  }
+
+.Globe-Container{
+    margin-top: -8rem;
+}
+
+.Part3ContactContainer{
+    margin-top: 2rem;
+    height: 2rem;
+    display: relative;
+    color: white;
+    background: rgb(18, 17, 22);
+}

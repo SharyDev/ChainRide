@@ -1,0 +1,26 @@
+.HeaderInnerContainer {
+    display: grid;
+    grid-template-columns: 0.7fr 1fr;
+    background: rgb(18, 17, 22);
+    color: white;
+    height: 5.2rem;
+   
+}
+.Menu{
+    margin-top: 2rem;
+    text-decoration: none;
+    color: white;
+    
+   
+}
+.Login-Header{
+    text-decoration: none;
+    color: white;
+   
+    margin-right: 6rem;
+}
+
+.Header-Logo{
+    width: 90px;
+    height: 90px;
+}

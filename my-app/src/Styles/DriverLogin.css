@@ -1,0 +1,105 @@
+.Login-Main-Container{
+    display: grid;
+    justify-content: center;
+    height: 37.3rem;
+    background-color: rgb(18, 17, 22);
+}
+.DriverText{
+    color: white;
+    font-size: 1rem;
+    margin-top: -1px;
+    margin-bottom: 2.5rem;
+}
+.Drivers-Logo{
+    width: 500px;
+    height: 500px;
+    margin-right: 5rem;
+}
+
+.Inner-Container-Login{
+    
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.Left-Container{
+margin-top: 2rem;
+
+}
+.Right-Container{
+    margin-top: 10rem;
+}
+
+.Meta-Logo{
+    width: 40px;
+    height: 40px;
+}
+.Logo-Login{
+    margin-top: -3rem;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 2rem;
+}
+
+
+
+
+
+@property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+:root {
+    --gradient-angle: 0deg; 
+    --clr-1: #052b2f;
+    --clr-3: #0e4b50;
+    --clr-4: #2d8f85;
+    --clr-5: #204e74;
+}
+
+.Login-Button-Client {
+    position: relative;
+    margin-top: 0rem;
+    padding: 10px 30px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    z-index: 1; 
+    border-radius: 12px;
+    background: var(--clr-1);
+    overflow: hidden; 
+    font-size: 1rem;
+    color: white;
+}
+
+.Login-Button-Client::after{
+    content: "";
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: conic-gradient(
+        from var(--gradient-angle),
+        var(--clr-3),
+        var(--clr-4),
+        var(--clr-5),
+        var(--clr-4),
+        var(--clr-3)
+    );
+    font-size: 15px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: rotation 20s linear infinite;
+    z-index: -1; 
+    pointer-events: none; 
+}
+
+
+@keyframes rotation {
+   0% { --gradient-angle: 0deg;}
+   100% {  --gradient-angle: 360deg; }
+}
+

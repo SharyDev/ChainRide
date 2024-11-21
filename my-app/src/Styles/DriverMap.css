@@ -1,0 +1,70 @@
+.DriverMap-MainContainer{
+    display: grid;
+    grid-template-columns: 0.4fr 1.6fr;
+    background: rgb(18, 17, 22);
+    width: 100%;
+}
+
+.Driver-Search-Para{
+    color: white;
+}
+
+.SearchingClient{
+    margin-top: 3rem;
+    margin-left: 6rem;
+    display: flex;
+  width: 3.5em;
+  height: 3.5em;
+  border: 3px solid transparent;
+  border-top-color: #3cefff;
+  border-bottom-color: #3cefff;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+.SearchingClient:before{
+    content: '';
+    display: block;
+    margin: auto;
+    width: 0.75em;
+    height: 0.75em;
+    border: 3px solid #3cefff;
+    border-radius: 50%;
+    animation: pulse 1s alternate ease-in-out infinite;
+}
+
+.DriverDetails-Container{
+  margin-top: 2rem;
+}
+
+
+@keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes pulse {
+    from {
+      transform: scale(0.5);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @media (min-width: 280px) and (max-width: 319px) {
+    .DriverMap-MainContainer{
+      width: 40rem;
+    }
+    .SearchingClient{
+
+      margin-left:30%;
+    }
+
+    .Car-Logo{
+      margin-top: 2rem;
+      width: 100px;
+      height: 100px;
+    }
+  }
