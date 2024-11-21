@@ -22,9 +22,9 @@ function Home() {
 
         // Create and configure the globe with texture
         const globe = new ThreeGlobe()
-            .globeImageUrl(GlobeImg); // Path to your locally imported image
+            .globeImageUrl(GlobeImg); 
 
-        // Sample arc data (replace these with actual coordinates)
+        // arc data 
         const arcsData = [
             { startLat: 37.7749, startLng: -122.4194, endLat: 40.7128, endLng: -74.0060, color: "#FF0000" }, // San Francisco to New York
             { startLat: 34.0522, startLng: -118.2437, endLat: 51.5074, endLng: -0.1278, color: "#00FF00" }, // Los Angeles to London
@@ -39,7 +39,7 @@ function Home() {
             .arcStroke(0.5)
             .arcDashLength(0.5)
             .arcDashGap(4)
-            .arcDashAnimateTime(2000); // Adjust speed of animation
+            .arcDashAnimateTime(2000); 
 
         scene.add(globe);
 
