@@ -16,8 +16,8 @@ module.exports = {
       host: "127.0.0.1",  // Localhost
       port: 7545,         // Standard Ethereum port (Ganache CLI default)
       network_id: "*",    // Match any network ID
-      gas: 6721975,       // Gas limit (can be adjusted as necessary)
-      gasPrice: 20000000000, // Gas price (20 Gwei)
+     // gas: 6721975,       // Gas limit (can be adjusted as necessary)
+      //gasPrice: 20000000000, // Gas price (20 Gwei)
     },
 
     // Uncomment and modify for deployment to public test networks like Goerli
@@ -45,7 +45,7 @@ module.exports = {
   // Solidity compiler settings
   compilers: {
     solc: {
-      version: "0.8.21",  // Solidity version (compatible with your contract files)
+      version: "0.4.26",  // Solidity version (compatible with your contract files)
     }
   }
 };
