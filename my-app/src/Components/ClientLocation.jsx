@@ -48,8 +48,8 @@ function ClientLocation() {
             try {
                 // Request account access
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-                const account = accounts[0]; // Get the first account
-                setClientMetaAccount(account); // Set the MetaMask account
+                const account = accounts[0]; 
+                setClientMetaAccount(account);
                 return account; 
             } catch (error) {
                 console.error("Error fetching MetaMask account:", error);

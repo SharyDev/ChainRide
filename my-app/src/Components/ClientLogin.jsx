@@ -24,8 +24,8 @@ async function requestAccount() {
             axios({
                 method: 'post',
                 url: 'http://localhost:8080/login',
-                data: { username: accounts[0] }, // Send Ethereum account data
-                withCredentials: true, // Allow the browser to send/receive cookies
+                data: { username: accounts[0] },
+                withCredentials: true, 
             })
             .then(response => {
                 // Handle successful response

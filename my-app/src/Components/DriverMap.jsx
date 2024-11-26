@@ -14,22 +14,41 @@ import Thumbnail from "../Assets/Images/Car-Thumbnail.png";
 import DestinationMarker from "../Assets/Images/DestinationMarker.png";
 import "../Styles/DriverMap.css";
 import Logo from "../Assets/Images/Logo.png";
+import ChainRideContract from "../Contracts/ChainRideContract.json";
+import Web3 from 'web3';
+
+
 
 function DriverMap() {
     const navigate = useNavigate();
     const [currentPosition, setCurrentPosition] = useState(null);
-    const [driverId, setDriverId] = useState(null); // Store the unique driverId
+    const [driverId, setDriverId] = useState(null);
     const [error, setError] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
+    const [rideCompletionCheck, setRideCompletionCheck] = useState(null);
     const [metaAccount, setMetaAccount] = useState(null);
     const [clientSearchActive, setClientSearchActive] = useState(null);
+    const [clientData,setClientData] = useState(null);
+    const [foundRide,setFoundRide] = useState(null);
+    const [acceptRide,setAcceptRide] = useState(null);
+    const [shorestDistance,setshorestDistance] = useState(null);
+    const [rideCost,setRideCost] = useState(null);
+    const [rideAccepted,setRideAccepted] = useState(false);
+    const [processing,setProcessing] = useState(false);
+    const [recievedRide,setRecievedRide] = useState(false);
+    const [driverInitalData,setdriverInitalData] = useState(false);
+    const [destination,setDestination] = useState({
+        lat: 43.6596, 
+        lng: -79.3960  
+    });
+   const [totalTime,setTotalTime] = useState(null)
 
     const fetchMetaAccount = async () => {
         if (window.ethereum) {
             try {
                 // Request accounts from MetaMask
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                setMetaAccount(accounts[0]); // Set the first account
+                setMetaAccount(accounts[0]); 
             } catch (error) {
                 console.error("Error fetching MetaMask account:", error);
                 setError("MetaMask connection error");
@@ -52,6 +71,8 @@ function DriverMap() {
                 longitude,
                 metaAccount  
             }, { withCredentials: true });
+
+            setdriverInitalData(response.data);
 
             console.log("Response from backend:", response.data);
         } catch (error) {
@@ -76,6 +97,7 @@ function DriverMap() {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
+                    console.log("Driver Location: " + latitude + " : " + longitude);
                     setCurrentPosition({ lat: latitude, lng: longitude });
                 },
                 (err) => {
@@ -111,38 +133,47 @@ function DriverMap() {
         try {
             console.log("Fetching all clients...");
             const response = await axios.get("http://localhost:8080/api/Get-All-Clients");
-            
+    
             // Log the entire response object
             console.log("Response received:", response);
     
-            //NearestClient
+            let nearestClientId = null;
+            let shortestDistance2 = Infinity;
+            let TotalDistance = 0; // Track total distance outside the loop
     
-            let nearestClientId = null;  // Variable to store the nearest driver ID
-            let shortestDistance = Infinity;  // Initialize with a large number for comparison
-    
+            // Loop through each client
             response.data.forEach((client, index) => {
                 const distance = calculateDistance(client.latitude, client.longitude, currentPosition.lat, currentPosition.lng);
                 console.log(`Client ${index + 1}:`, client);
                 console.log("Distance:", distance);
-        
-                // Update the nearest driver if this distance is shorter
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    nearestClientId = client.clientId;  
+    
+                // Update the nearest client if this distance is shorter
+                if (distance < shortestDistance2) {
+                    shortestDistance2 = distance;
+                    nearestClientId = client.clientId;
+    
+                    // Calculate the distance from the client to their destination
+                    const clientDestinationDistance = calculateDistance(client.latitude, client.longitude, client.ClientDestinationLatiture, client.ClientDestinationLongitude);
+                    const TotalDistance = parseFloat(clientDestinationDistance) + parseFloat(shortestDistance2);
+                 
+    
+                    // Update state after calculations are done
+                    setClientData(client);
+                    setshorestDistance(TotalDistance);
+                    setRideCost(clientDestinationDistance * 0.00000029);
+                    console.log("Cost Of Ride:"+rideCost);
                 }
             });
     
+            // You might want to log or use nearestClientId after the loop
             console.log("Nearest ClientID:", nearestClientId);
-            //Setting Destination
-            ClientDestinationSetting(nearestClientId);
-
-
-        
+    
         } catch (error) {
             console.error("Error fetching Clients:", error);
         }
-    }
-
+    };
+    
+    
     const ClientDestinationSetting = async (nearestClientId) => {
         try {
             console.log("Fetching Nearest clients...");
@@ -160,7 +191,101 @@ function DriverMap() {
         }
     }
     
+    
+const RideCompleted = async () => {
+    UpdateLocation();
+    console.log("clientData:", clientData); // Add this to debug
+    if (!clientData) return;
+    
+    const currLat = parseFloat(currentPosition.lat);
+    const currLng = parseFloat(currentPosition.lng);
+    const clientLat = parseFloat(clientData.ClientDestinationLatiture);
+    const clientLng = parseFloat(clientData.ClientDestinationLongitude);
+    let RideComplionDistance = null;
+    
+    RideComplionDistance = calculateDistance(currLat, currLng, clientLat, clientLng);
+    console.log(`Ride Inproess <-----...`);
+    console.log(RideComplionDistance);
+    if (RideComplionDistance < 6) {
+        setRideCompletionCheck(true);
+        console.log(`Ride Completed...`);
+        const dummyAddress = "0x1c1339e7797fFDDe9f9c7D59386415e4B42A2a60"; 
+        // Assuming you've initialized Web3.js and have the contract ABI and address
+        const contractAddress = "0x1c1339e7797fFDDe9f9c7D59386415e4B42A2a60"; // Replace with actual contract address
+        const abi = ChainRideContract.abi;
+    
+        // Connect to Ethereum provider (Metamask or other wallet)
+        if (window.ethereum) {
+            const web3 = new Web3(window.ethereum);
+            window.ethereum.enable();  // Request access to the user's accounts
+    
+            const contract = new web3.eth.Contract(abi, contractAddress);
+    
+            // Parameters to pass to the contract
+            const price = 10;  // Assuming the price is stored in clientData
+            const distance = parseInt(RideComplionDistance);
+            const initialLongitude = parseInt(currentPosition.lng);  // Scaling for better precision
+            const initialLatitude = parseInt(currentPosition.lat);
+            const finalLongitude = parseInt(clientData.ClientDestinationLongitude);
+            const finalLatitude = parseInt(clientData.ClientDestinationLatiture);
+            const clientMetaAccount = "0x1c1339e7797fFDDe9f9c7D59386415e4B42A2a60";  // Assuming client's address is stored in clientData
+            const driverMetaAccount = "0xC17ed6C2225D867c6fe8e01f728E27E844FD418D";  // Assuming driver's address is available
+           
+            // Get the current user's Ethereum account
+            web3.eth.getAccounts().then(accounts => {
+                const signer = accounts[0]; // Use the first account
+    
+                // Send the transaction to the smart contract
+                contract.methods
+                    .recordTrip(
+                        price,
+                        distance,
+                        initialLongitude,
+                        initialLatitude,
+                        finalLongitude,
+                        finalLatitude,
+                        clientMetaAccount,
+                        driverMetaAccount
+                    )
+                    .send({
+                        from: signer,
+                        value: web3.utils.toWei('4', 'ether'),  // Adjust ETH value as needed
+                        gas: 2000000  // Set an appropriate gas limit
+                    })
+                    .on('transactionHash', (hash) => {
+                        console.log(`Transaction hash: ${hash}`);
+                    })
+                    .on('receipt', (receipt) => {
+                        console.log('Transaction receipt:', receipt);
+                    })
+                    .on('error', (error) => {
+                        console.error('Error recording trip:', error);
+                    });
+            }).catch(error => {
+                console.error('Error getting accounts:', error);
+            });
+        } else {
+            console.log('Ethereum provider not found. Please install MetaMask or another Ethereum wallet.');
+        }
+    } else {
+        console.log("Destination does not match the client destination.");
+    }    
+};
+    
+    const costCalculate = () => {
+        const ethToUsdRate = 3427.24; 
+        const baseRatePerKmUsd = 1; 
 
+
+        const costPerMeter = (baseRatePerKmUsd / 1000) / ethToUsdRate;
+        if(costPerMeter< 0.00000000)
+        {
+            costPerMeter = 0.00000001;
+        }
+        console.log("Cost per meter in ETH:", costPerMeter.toFixed(8));
+
+    }
+    
     const calculateDistance = (lat1, lng1, lat2, lng2) => {
         const R = 6371; 
         const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -170,37 +295,74 @@ function DriverMap() {
             Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
             Math.sin(dLng / 2) * Math.sin(dLng / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; 
+        let meters =  R * c;
+        meters = 1000 * meters;
+        let roundedMeters = meters.toFixed(3);
+        return roundedMeters; 
     };
 
+  const RadiusCheck = () => {
+    if(shorestDistance <= 5)
+    {
+        setProcessing(true);
+    }
+  }
+  const Transaction = () => {
+    
+  }
+
+  const Received = () => {
+    setRideAccepted(true);
+    setRecievedRide(true);
+    setDestination({
+        lat: clientData.ClientDestinationLatiture,
+        lng: clientData.ClientDestinationLongitude
+    }
+    )
+
+  }
 
     useEffect(() => {
+        RideCompleted();
+        RadiusCheck();
+        costCalculate();
         getCurrentLocation();
         verifyCookie(); 
         fetchDriverId(); 
-        SetDestination();
+      
 
     }, []);
+   
 
     useEffect(() => {
-        if (driverId) {
-            UpdateLocation(); // Update location once driverId is fetched
+        if (clientData) {
+            console.log("Nearest:", clientData);
+            setDestination({
+                lat: clientData.latitude, 
+                lng: clientData.longitude   
+            });
+
+            console.log("Nearest: -->", destination.lat);
+            console.log("Nearest:<---", destination.lng);
+            
         }
-    }, [currentPosition, driverId]); // Update when position or driverId changes
+       
+    }, [clientData]);
+
+    
+    
+    useEffect(() => {
+        if (driverId) {
+            UpdateLocation(); 
+        }
+    }, [currentPosition, driverId]);
     useEffect(() => {
         if (currentPosition) {
             SetDestination(); 
         }
     }, [currentPosition]);
-    const defaultPosition = {
-        lat: 43.6532, 
-        lng: -79.3832
-    };
 
-    const destination = {
-        lat: 43.6596, 
-        lng: -79.3960  
-    };
+    
 
     return (
         <div className="DriverMap-MainContainer">
@@ -210,7 +372,66 @@ function DriverMap() {
                 </>) : ( 
                     <>
                         <p className="Driver-Search-Para">Searching For Clients...</p>
-                        <div className="SearchingClient"></div>
+                        <p>{clientData ? (
+                    <div>
+                        {setFoundRide ? (
+                            <>
+                                <div className="Ride-Found-Container">
+                                    <p>Client ID: {clientData.clientId}</p>
+                                    <p>Distance: {shorestDistance} Meters</p>
+                                    <p>Earn: {rideCost} ETH</p>
+                                    {rideAccepted ? (
+                                        <>
+                                           {processing ? (
+                                            <>
+                                                {recievedRide ? (
+                                                    <>
+                                                        {rideCompletionCheck ? (
+                                                            <>
+                                                                
+                                                            </>
+                                                        ): (
+                                                            <>
+                                                                <button onClick={RideCompleted}> Ride Completed</button>
+                                                            </>
+                                                        )}
+                                                       
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button className="Ride-Accept-Button" onClick={Received}>Received</button>
+                                                    </>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="SearchingClient"></div>
+                                            </>
+                                        )} 
+                                        </>
+                                    ) :
+                                    (
+                                        <>
+                                            <button className="Ride-Accept-Button" onClick={e => {
+                                                setRideAccepted(true);
+                                            }}>Accept</button>
+                                        </>
+                                    ) }
+
+                                    
+                               </div>
+                            </>)
+                        :
+                        (<>
+
+                        </>)}
+                         
+
+                    </div>
+                ) : (
+                    <div className="SearchingClient"></div>
+                )}</p>
+                        
                     </>
                 )}
                 
@@ -236,7 +457,7 @@ function Directions({ origin, destination }) {
     const [directionsRenderer, setDirectionsRenderer] = useState(null);
     const [routes, setRoutes] = useState(null);
 
-    useEffect(() => {
+     useEffect(() => {
         if (!routesLibrary || !map || typeof window.google === 'undefined') return;
 
         const service = new routesLibrary.DirectionsService();
@@ -250,21 +471,32 @@ function Directions({ origin, destination }) {
 
     useEffect(() => {
         if (!directionsService || !directionsRenderer || typeof window.google === 'undefined') return;
-
-        directionsService.route({
-            origin: new window.google.maps.LatLng(origin.lat, origin.lng),
-            destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-            travelMode: window.google.maps.TravelMode.DRIVING,
-            provideRouteAlternatives: true
-        }, (result, status) => {
-            if (status === window.google.maps.DirectionsStatus.OK) {
-                directionsRenderer.setDirections(result);
-                setRoutes(result.routes);
-            } else {
-                console.error("Directions request failed due to " + status);
+    
+        // Ensure origin and destination are defined
+        if (!origin || !destination) return;
+    
+        // Clear previous directions
+        directionsRenderer.setDirections({ routes: [] });
+    
+        // Request a new route
+        directionsService.route(
+            {
+                origin: new window.google.maps.LatLng(origin.lat, origin.lng),
+                destination: new window.google.maps.LatLng(destination.lat, destination.lng),
+                travelMode: window.google.maps.TravelMode.DRIVING,
+            },
+            (result, status) => {
+                if (status === window.google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                    setRoutes(result.routes); // Update state with the new route
+                } else {
+                    console.error("Directions request failed due to " + status);
+                }
             }
-        });
+        );
     }, [directionsService, directionsRenderer, origin, destination]);
+    
+   
 
     return (
         <>

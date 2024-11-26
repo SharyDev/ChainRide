@@ -1,0 +1,8 @@
+I think we should build a model with sample data and then use the different straties described in the literture for
+improving the system.
+
+Data Model, data source same.
+
+for sure, if data is changed then prediction will be changed.
+
+maxmium what we have and start from there.

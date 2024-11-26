@@ -9,7 +9,7 @@ contract("ChainRideContract", (accounts) => {
   });
 
   it("should record a trip", async () => {
-    const price = web3.utils.toWei("1", "ether"); // Convert 1 Ether to Wei
+    const price = web3.utils.toWei("1", "ether"); 
     const distance = 10;
     const initialLongitude = 12345;
     const initialLatitude = 54321;

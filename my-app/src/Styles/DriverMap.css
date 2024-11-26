@@ -37,6 +37,36 @@
   margin-top: 2rem;
 }
 
+.Ride-Found-Container{
+  color: white;
+}
+
+
+.Ride-Accept-Button {
+  margin-top: 2rem;
+  background-color: #13aa52;
+  border: 1px solid #13aa52;
+  border-radius: 2px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 10px 25px;
+  text-align: center;
+  transform: translateY(0);
+ 
+}
+
+.Ride-Accept-Button:hover {
+  
+  transform: translateY(-2px);
+}
+
+@media (min-width: 768px) {
+  .button-37 {
+    padding: 10px 30px;
+  }
+}
 
 @keyframes spin {
     to {
