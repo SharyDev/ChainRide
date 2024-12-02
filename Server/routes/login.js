@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res) => {
-    const username = "shahroz";
+    const username = "Chain";
 
   
-    const token = jwt.sign({ username }, "Hello", { expiresIn: "1h" });
+    const token = jwt.sign({ username }, "ChainRide", { expiresIn: "1h" });
 
    
     res.cookie("token", token, {

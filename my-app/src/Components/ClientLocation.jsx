@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import axios, { Axios } from "axios";
 import {
     APIProvider,
     Map,
@@ -12,9 +12,12 @@ import Thumbnail from "../Assets/Images/Car-Thumbnail.png";
 import DestinationMarker from "../Assets/Images/DestinationMarker.png";
 import "../Styles/ClientMap.css";
 import Logo from "../Assets/Images/Logo.png";
+import ChainRideContract from "../Contracts/ChainRideContract.json";
+import Web3 from 'web3';
 
 function ClientLocation() {
     const navigate = useNavigate();
+    const [initalData,setInitialData] = useState(true);
     const [currentPosition, setCurrentPosition] = useState(null);
     const [error, setError] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
@@ -22,44 +25,47 @@ function ClientLocation() {
     const [distance, setDistance] = useState("");
     const [duration, setDuration] = useState("");
     const [SearchRequest, setSearchRequest] = useState("");
-   
+    const [driverId, setDriverId] = useState(null);
     const [clientId, setClientId] = useState(null);
     const [searchActive, setSearchActive] = useState(false);
     const [selectedDriverData,setSelectedDriverData] = useState(null);
     const [driverLocation,setDriverLocation] = useState(null);
+    const [clientData, setClientData] = useState(null);
+    const [driverData, setDriverData] = useState(null);
+    const [holdDistance,setHoldDistance] = useState(null);
+    const [location, setLocation ] = useState({});
     const [clientMetaAccount, setClientMetaAccount] = useState("");
-    //destination Target
+    const [assigned,setAssigned] = useState(false);
+    const [acceptRide,setAcceptRide] = useState(false);
+    const [recieved, setRecieved] = useState(false);
+    const [transactionCheck,settransactionCheck] = useState(false);
     const [destination, setDestination] = useState({
         lat: 43.6596,
         lng: -79.3960  
     });
-    //Current Location
     const [currentDestination,SetCurrentDestination] = useState({
         lat: 43.6596,
         lng: -79.3960  
     });
+    const [clientLocationUpdates, setClientLocationUpdates] = useState(null);
 
 
-    const [clientLatitude, setClientLatitude] = useState(null);
-    const [clientLongitude, setClientLongitude] = useState(null);
 
     const fetchMetaAccount = async () => {
-        if (typeof window.ethereum !== "undefined") {
+        if (window.ethereum) {
             try {
-                // Request account access
-                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-                const account = accounts[0]; 
-                setClientMetaAccount(account);
-                return account; 
+                // Request accounts from MetaMask
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                setClientMetaAccount(accounts[0]); // Use the first account
             } catch (error) {
                 console.error("Error fetching MetaMask account:", error);
-                return null; 
+                setError("MetaMask connection error");
             }
         } else {
-            console.error("MetaMask is not installed.");
-            return null;
+            setError("MetaMask is not installed");
         }
     };
+    
 
     const calculateDistance = (lat1, lng1, lat2, lng2) => {
         const R = 6371; 
@@ -84,17 +90,23 @@ function ClientLocation() {
                         lng: longitude
                     };
                     setCurrentPosition(clientLocation);
-                    setClientLatitude(latitude);
-                    setClientLongitude(longitude);
+                    setLocation({
+                        lat: latitude,
+                        lng:longitude
+                    })
+                   
+                    setClientLocationUpdates({
+                        lat: latitude,
+                        lng: longitude
+                    })
                     console.log("Client's current location:", clientLocation);
     
                    
                     let ClientAcount = await fetchMetaAccount();
                     console.log("Client Accounts--->:", ClientAcount);
     
-                    
                    
-                    saveLocation(clientLocation, ClientAcount);
+                    
                 },
                 (err) => {
                     setError("Error: " + err.message);
@@ -105,58 +117,75 @@ function ClientLocation() {
         }
     };
 
-    const saveLocation = async (location,ClientAcount) => {
+   
+    const saveLocation = async () => {
         // Ensure clientId is fetched before sending the request
-        if (!clientId) {
-            console.error("Client ID is not available");
+        
+        if (!clientId  || !clientMetaAccount ) {
+            console.error("Client ID or client MetaAccount is not available");
             return; // Don't proceed without a valid clientId
         }
-        console.log("-----Working here--" + clientId);
+        console.log("-----Working here--" + clientMetaAccount);
+        
+        if(clientData) return;
+        if(initalData === false) return;
         try {
             await axios.post("http://localhost:8080/api/save-client-location", {
                 clientId,
-                latitude: location.lat,
-                longitude: location.lng,
+                latitude: clientLocationUpdates.lat,
+                longitude: clientLocationUpdates.lng,
                 ClientDestinationLatiture: destination.lat,
                 ClientDestinationLongitude: destination.lng,
-                metaAccount: ClientAcount
+                metaAccount: clientMetaAccount
             });
             console.log("Location saved successfully.");
+            setInitialData(false);
         } catch (err) {
             console.error("Failed to save location:", err);
         }
     };
-    
-    const getNearestDriver = async (nearestDriverId) => {
-        try {
-            console.log("Fetched DriverId Here:", nearestDriverId);
-           
-           
-            const response = await axios.get("http://localhost:8080/api/nearest-driver", {
-                params: {
-                    driverId: nearestDriverId, 
-                },
-            });
-          
-            
-            setSelectedDriverData(response.data);
-            console.log("Error Fix Here: --->" + selectedDriverData);
-            console.log("Fetched DriverId Here:", response.data);
-        } catch (error) {
-            console.error("Fetched DriverId Here:", error);
-        }
-    };
+
     
 
+    useEffect(() => {
+        
+
+       
+            saveLocation();
+        
+    }, [clientLocationUpdates, destination]);
+ 
     const fetchClientId = async () => {
-    try {
-        const response = await axios.get("http://localhost:8080/api/generate-client-id"); 
-        setClientId(response.data.clientId); // Set clientId
-        console.log("Fetched clientId:", response.data.clientId);
-    } catch (error) {
-        console.error("Error fetching clientId:", error);
-    }
-};
+        try {
+          const response = await axios.get("http://localhost:8080/api/generate-client-id");
+          
+          // Log the entire response data for debugging
+          console.log("Fetched response data:", response.data);
+  
+          // Set clientId from the response
+          if (response.data && response.data.clientId) {
+            setClientId(response.data.clientId);
+           
+          } else {
+            console.error("clientId not found in the response:", response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching clientId:", error);
+        }
+      };
+  
+    
+    useEffect(() => {
+      // If clientId is already set, do not call the API again
+      if (clientId !== null) return;
+  
+     
+      fetchClientId(); // Call fetchClientId only once
+      
+      getDrivers();
+    }, [clientId]);
+
+   
 
     const verifyCookie = async () => {
         try {
@@ -171,44 +200,29 @@ function ClientLocation() {
             setVerificationResult(null);
         }
     };
-
+ 
+///////////////////////////////
     const getDrivers = async () => {
-        try {
-            const response = await axios.get("http://localhost:8080/api/get-all-drivers"); 
-            console.log("Drivers:", response.data); 
-    
-            let nearestDriverId = null;  
-            let shortestDistance = Infinity;  
-    
-            response.data.forEach((driver, index) => {
-                const distance = calculateDistance(driver.latitude, driver.longitude, clientLatitude, clientLongitude);
-                console.log(`Driver ${index + 1}:`, driver);
-                console.log("Distance:", distance);
-    
-               
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    nearestDriverId = driver.driverId;  
-                }
-            });
-           
-            if (nearestDriverId) {
-                console.log("Nearest Driver ID:", nearestDriverId);
-                console.log("Shortest Distance:", shortestDistance);
-              
-                getNearestDriver(nearestDriverId);
-              } else {
-                console.log("No nearest driver found.");
-              }
-            
-    
-        } catch (error) {
-            console.error("Error fetching Drivers:", error);
+        console.log(clientId);
+        // Only fetch client data if clientId is not null
+        if (clientId) {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/get-client?clientId=${clientId}`);
+                console.log("Client data:", response.data); 
+                
+
+            } catch (error) {
+                console.error("Error fetching client:", error);
+            }
+        } else {
+            console.log("clientId is null, not fetching client data.");
         }
+
+                
     };
     
-
     const geocodeDestination = async () => {
+       
         setSearchRequest(true);
         if (!destinationInput) return;
         
@@ -219,30 +233,236 @@ function ClientLocation() {
                     lat: results[0].geometry.location.lat(),
                     lng: results[0].geometry.location.lng()
                 };
+    
+                // Set new destination
                 setDestination(newDestination);
-                SetCurrentDestination(newDestination);
-                setTimeout(() => {
-                    setSearchActive(true);
-                  }, 2000);
-
-                  SetCurrentDestination({
-                    lat: selectedDriverData.latitude,
-                    lng: selectedDriverData.longitude 
-                });
-                  
+    
+                // If a driver is selected, set the current destination to the driver's location
+                if (selectedDriverData) {
+                    SetCurrentDestination({
+                        lat: selectedDriverData.latitude,
+                        lng: selectedDriverData.longitude
+                    });
+                } else {
+                    // Set the destination location if no driver is selected
+                    SetCurrentDestination(newDestination);
+                }
+               
+                
+                DriverSelected();
+                // Activate search after a short delay
+                
+    
                 console.log("New destination:", newDestination);
             } else {
                 console.error("Geocode was not successful for the following reason:", status);
             }
         });
     };
+    const DriverSelected = async () => {
+        console.log("Search Req:", SearchRequest);
+    
+        if (SearchRequest) {
+            if (!clientId) {
+                console.error("clientId is missing");
+                return;
+            }
+    
+            try {
+                const response = await axios.get(`http://localhost:8080/api/get-client?clientId=${clientId}`);
+                console.log("Client data 2:", response.data);
+    
+                if (response.data.clientPicked) {
+                    SetCurrentDestination({
+                        lat: response.data.ClientDestinationLatiture,
+                        lng: response.data.ClientDestinationLongitude,
+                    });
+                }
+    
+                if (response.data.driverId) {
+                    console.log("Working on getting driver ID.");
+                    getDriverInfo(response.data.driverId);
+                }
+                let RideComplionDistance;
+    
+                if (response.data.rideComplete) {
+                    if (response.data.paymentComplete === false) {
+                        if (clientData && driverData) {
+                            RideComplionDistance = calculateDistance(
+                                clientData.latitude,
+                                clientData.longitude,
+                                clientData.ClientDestinationLatiture,
+                                clientData.ClientDestinationLongitude
+                            );
+    
+                            RideComplionDistance += calculateDistance(
+                                clientData.latitude,
+                                clientData.longitude,
+                                driverData.latitude,
+                                driverData.longitude
+                            );
+    
+                            console.log("Ride Completion Distance:", RideComplionDistance);
+                        }
+    
+                        if (!transactionCheck) {
+                            console.log("Initiating metaTransaction...");
+                            await metaTransaction(RideComplionDistance);
+                            settransactionCheck(true);
+                        }
+                    }
+                }
+    
+                if (response.data.assigned) {
+                    setTimeout(() => {
+                        setSearchActive(true);
+                    }, 2000);
+                    setAssigned(true);
+                    setClientData(response.data);
+                } else {
+                    console.log("Client not assigned or no assigned property found.");
+                }
+            } catch (error) {
+                console.error("Error fetching client data:", error.message);
+            }
+        }
+    };
+    
+    
+    const metaTransaction = (RideDistance) =>
+    {
+        if (window.ethereum) {
+
+            const contractAddress = "0x4867136F1acc48C2aD4C24e08AE5f75cA4962A6C";
+            const abi = ChainRideContract.abi;
+            const web3 = new Web3(window.ethereum);
+           
+            const price = clientData.cost;
+            const priceInWei = web3.utils.toWei(String(price), 'ether');  // Assuming the price is stored in clientData
+            const distance = parseInt(RideDistance);
+            const initialLongitude = parseInt(currentPosition.lng);  // Scaling for better precision
+            const initialLatitude = parseInt(currentPosition.lat);
+            const finalLongitude = parseInt(clientData.ClientDestinationLongitude);
+            const finalLatitude = parseInt(clientData.ClientDestinationLatiture);
+            const clientMetaAccount = clientData.metaAccount;  // Assuming client's address is stored in clientData
+            const driverMetaAccount = driverData.metaAccount;  // Assuming driver's address is available
+           
+            
+            window.ethereum.enable();  
+            const contract = new web3.eth.Contract(abi, contractAddress);
+            
+            web3.eth.getAccounts().then(accounts => {
+                const signer = accounts[0]; 
+                settransactionCheck(true);
+                contract.methods
+                    .recordTrip(
+                        priceInWei,
+                        distance,
+                        initialLongitude,
+                        initialLatitude,
+                        finalLongitude,
+                        finalLatitude,
+                        clientMetaAccount,
+                        driverMetaAccount
+                    )
+                    .send({
+                        from: signer,
+                        value: web3.utils.toWei(clientData.cost, 'ether'),  
+                        gas: 2000000  
+                    })
+                    .on('transactionHash', (hash) => {
+                        console.log(`Transaction hash: ${hash}`);
+                        
+                    })
+                    .on('receipt', (receipt) => {
+                        console.log('Transaction receipt:', receipt);
+                      
+                        
+                            try {
+                                 axios.post("http://localhost:8080/api/client-payment", { id: clientData.clientId });
+                                console.log("Payment recorded successfully.");
+                            } catch (err) {
+                                if (err.response) {
+                                    console.error("Error response from server:", err.response.data);
+                                } else {
+                                    console.error("Error making request:", err.message);
+                                }
+                            }
+                            
+                        }
+                    )
+                    .on('error', (error) => {
+                        console.error('Error recording trip:', error);
+                    });
+            }).catch(error => {
+                console.error('Error getting accounts:', error);
+            });
+        } else {
+            console.log('Ethereum provider not found. Please install MetaMask or another Ethereum wallet.');
+        }
+    }
 
     useEffect(() => {
+        if (driverId) { 
+            console.log("Driver ID has been updated:", driverId);
+            // Add additional logic here if needed
+        }
+    }, [driverId]);
+
+    const getDriverInfo = async (driverid) => {
+        try {
+            console.log("DriverId" + driverid);
+            const response = await axios.get(`http://localhost:8080/api/get-driver?driverId=${driverid}`);
+            console.log("Driver:", response.data);
+            setDriverData(response.data); 
+            
+        } catch (error) {
+            console.error("Error fetching driver data:", error);
+        }
+    }
+    useEffect(() => {
+        if (driverData) {
+            console.log("Driver Data Updated:", driverData);
+        } else {
+            console.log("Driver Data is null or not yet updated.");
+        }
+    }, [driverData]); 
+
+    const RideAccepted = () => {
+        setAcceptRide(true);
+
+        console.log(" LAT: " + driverData.latitude + "longitude" + driverData.longitude);
+        if(clientData.assigned === true)
+        {
+            SetCurrentDestination({
+                lat: driverData.latitude,
+                lng: driverData.longitude
+            });
+        }
+
        
+    }
+
+    
+    useEffect(() => {
+        // Set the interval to call DriverSelected every 5 seconds (5000ms)
+        const intervalId2 = setInterval(() => {
+        
+            DriverSelected();
+            
+        }, 5000); // Adjust the time interval as needed
+
+        // Cleanup the interval when the component unmounts
+        return () => clearInterval(intervalId2);
+    }, [SearchRequest, clientId]);
+    
+    
+
+    useEffect(() => {
+        getDrivers();
         getCurrentLocation();
         verifyCookie(); 
-        fetchClientId();
-        getDrivers();
+        
     }, []);
 
     return (
@@ -251,6 +471,7 @@ function ClientLocation() {
                 <img src={Logo} className="Car-Logo" alt="Logo" />
                 <p>Please Enter Location Here</p>
                 <textarea
+                
                     className="LocationFinder-Text"
                     placeholder="Please Enter Location Here.."
                     rows="1"
@@ -275,8 +496,30 @@ function ClientLocation() {
                                 <p>Driver Found..</p>
                             </div>
                             <div className="Driver-Meta-Account">
-                                <p>Driver Meta-Account: {selectedDriverData.metaAccount}</p>
+                                <p className="Client-Info-Container">Driver ID: {clientData.driverId}</p>
+                                <p className="Client-DriverMetaAcccount">Driver Meta-Account: {clientData.metaAccount}</p>
+                                <p className="Client-Info-Container">Cost: {clientData.cost}</p>
+                                {acceptRide ? (
+                                    <>
+                                        {recieved ? (
+                                            <>
+                                              
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="Moving-RideContainer">
+                                                    <div className="MovingRide"></div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <button className="Client-AcceptRide" onClick={RideAccepted}>Accept</button>
+                                    </>
+                                )}
                             </div>
+
                         </div>
                         
                     </div>
@@ -354,7 +597,7 @@ function Directions({ origin, destination, setDistance, setDuration }) {
                 console.error("Directions request failed due to " + status);
             }
         });
-    }, [directionsService, directionsRenderer, origin, destination, setDistance, setDuration]);
+    }, [destination, directionsService, directionsRenderer, origin, destination, setDistance, setDuration]);
 
     return (
         <>

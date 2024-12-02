@@ -6,7 +6,7 @@ import "../Styles/DriverLogin.css";
 import ClientLogo from "../Assets/Images/Client-Logo.jpg";
 import axios from 'axios';
 
-function DriverLogin() {
+function ClientLogin() {
     const navigate = useNavigate();
 
 async function requestAccount() {
@@ -58,7 +58,7 @@ async function requestAccount() {
                     </div>
                     <div className="Right-Container">
                         <img src={Meta} className="Meta-Logo"></img>
-                        <p className="DriverText">Driver Login</p>
+                        <p className="DriverText">Client Login</p>
                         <button onClick={requestAccount} className="Login-Button-Client">Connect Wallet</button>
                     </div>
                 </div>
@@ -67,4 +67,4 @@ async function requestAccount() {
     );
 }
 
-export default DriverLogin;
+export default ClientLogin;

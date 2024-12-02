@@ -6,9 +6,15 @@ import * as THREE from 'three';
 import ThreeGlobe from 'three-globe';
 import GlobeImg from "../Assets/Images/Globe4.jpg";
 import CarImage from "../Assets/Images/Background.png";
+import { redirect, useHref, useNavigate } from "react-router-dom";
+import CarService from "../Assets/Images/Car-Service.png";
+import blockchainTransaction from "../Assets/Images/Blockchain-Transaction.png";
+import drivingLogo from "../Assets/Images/Driving.png";
+
 
 function Home() {
     const globeContainerRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Set up scene, camera, and renderer
@@ -44,7 +50,7 @@ function Home() {
         scene.add(globe);
 
         // Add ambient and directional light
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Soft white light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -54,11 +60,12 @@ function Home() {
         // Animation loop
         const animate = () => {
             requestAnimationFrame(animate);
-            globe.rotation.y += 0.001; // Rotate the globe
+            globe.rotation.y += 0.001; 
             renderer.render(scene, camera);
         };
         animate();
 
+        
         // Handle window resize
         const handleResize = () => {
             camera.aspect = globeContainerRef.current.offsetWidth / globeContainerRef.current.offsetHeight;
@@ -75,6 +82,30 @@ function Home() {
             globeContainerRef.current.removeChild(renderer.domElement);
         };
     }, []);
+    
+            const services = [
+                {
+                    title: "Ride Booking",
+                    description: "Connect riders and drivers directly with blockchain-powered ride matching. Enjoy real-time tracking, fare transparency, and seamless booking without intermediaries.",
+                    icon: "🚗", // Replace with a relevant icon or SVG
+                },
+                {
+                    title: "Enhanced Safety Features",
+                    description: "Stay safe with blockchain-enabled emergency alerts, anonymized profiles, and secure rider-driver pairing using cryptographic QR codes.",
+                    icon: "🛡️", // Replace with a relevant icon or SVG
+                },
+                {
+                    title: "Secure Payments",
+                    description: "Pay with cryptocurrencies or fiat-to-crypto gateways. Payments are held in smart contract escrow and released only after the ride is completed.",
+                    icon: "💳", // Replace with a relevant icon or SVG
+                },
+                {
+                    title: "Eco-Friendly Rides",
+                    description: "Choose eco-friendly rides with green vehicle options and shared rides. Contribute to carbon offset programs for a sustainable future.",
+                    icon: "🌱", // Replace with a relevant icon or SVG
+                },
+            ];
+
 
     return (
         <>
@@ -83,7 +114,7 @@ function Home() {
                 <div className="HomeInnerComponent">
                     <div className="Home-Intro">
                         <p>Ride when you want, <span className="Home-SpamText">where you want.</span><br /><span>Powered by Decentralized Crypto Technology</span></p>
-                        <button className="Home-RideButton">Book a Ride</button>
+                        <a className="Home-RideButton" href="/ClientLogin">Book a Ride</a>
                     </div>
                     <div className="HomeImage">
                         <img src={CarImage} className="HomeCar-Image" ></img>
@@ -96,12 +127,31 @@ function Home() {
                 <div className="Part2MainContainer">
                    <h1>About Us</h1>
                    <div className="Part2-Para-Container">
-                        <p className="Part2-Para">BlockRide is a decentralized, blockchain-based ride-booking platform designed to give riders and drivers control, transparency, and security in every journey. Powered by decentralized technology, BlockRide connects riders directly with drivers without relying on traditional intermediaries, reducing costs and ensuring fair compensation for drivers.</p>
+                        <p className="Part2-Para">Chain Ride is a decentralized, blockchain-based ride-booking platform designed to give riders and drivers control, transparency, and security in every journey. Powered by decentralized technology, BlockRide is a decentralized, blockchain-based ride-booking platform designed to give riders and drivers control, transparency, and security in every journey. Powered by decentralized technology, BlockRide connects riders directly with drivers without relying on traditional intermediaries, reducing costs and ensuring fair compensation for drivers connects riders directly with drivers without relying on traditional intermediaries, reducing costs and ensuring fair compensation for drivers.</p>
                    </div>
                    <div className="Globe-Container" ref={globeContainerRef} style={{ width: '100%', height: '500px' }}></div>
                 </div>
-                <div className="Part3ContactContainer">
-                    
+                <div className="Part3ServicesContainer">
+                    <h2 className>Our Services</h2>
+                    <div className="ServicesContainer">
+                        
+                            <div className="Car-Serivce">
+                                <img className="Car-Serivce-img"src={CarService}></img>
+                                <p  className="Car-Serivce-text">Car Booking</p>
+                            </div>
+                            <div className="Car-Serivce">
+                                <img className="Car-Serivce-img"src={blockchainTransaction}></img>
+                                <p  className="Car-Serivce-text">Blockchain</p>
+                            </div>
+                            <div className="Car-Serivce">
+                                <img className="Car-Serivce-img"src={drivingLogo}></img>
+                                <p  className="Car-Serivce-text">Driving</p>
+                            </div>
+                        
+                    </div>
+                    <div className="Part4ContactContainer">
+                                
+                    </div>
                 </div>
             </div>
         </>

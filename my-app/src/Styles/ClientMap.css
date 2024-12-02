@@ -38,7 +38,52 @@
   border-radius: 50%;
   animation: spin 1.5s linear infinite;
 }
+.Moving-RideContainer{
+  display: grid;
+  justify-content: center;
+}
+.MovingRide{
+margin-top: 2rem;
+display: flex;
+width: 3.5em;
+height: 3.5em;
+border: 3px solid transparent;
+border-top-color: #3cefff;
+border-bottom-color: #3cefff;
+border-radius: 50%;
+animation: spin 1.5s linear infinite;
+}
+.MovingRide:before {
+  content: '';
+  display: block;
+  margin: auto;
+  width: 0.75em;
+  height: 0.75em;
+  border: 3px solid #3cefff;
+  border-radius: 50%;
+  animation: pulse 1s alternate ease-in-out infinite;
+}
 
+.Client-DriverMetaAcccount {
+  margin-top: -0.6rem;
+  word-wrap: break-word; /* Ensures long words or strings break to fit the container */
+  max-width: 300px; /* Set a maximum width for the container (adjust as needed) */
+  white-space: pre-wrap; /* Preserves whitespace and breaks lines */
+  overflow-wrap: break-word; /* Additional support for breaking long words */
+  text-align: center; /* Aligns the text for readability */
+}
+.Client-AcceptRide{
+  background-color: #13aa52;
+  border: 1px solid #13aa52;
+  border-radius: 2px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 10px 25px;
+  text-align: center;
+  transform: translateY(0);
+}
 .SearchingRide:before {
     content: '';
     display: block;
@@ -48,6 +93,9 @@
     border: 3px solid #3cefff;
     border-radius: 50%;
     animation: pulse 1s alternate ease-in-out infinite;
+  }
+  .Client-Info-Container{
+    margin-top: -0.6rem;
   }
   
   @keyframes spin {

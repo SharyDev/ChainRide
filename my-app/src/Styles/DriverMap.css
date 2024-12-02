@@ -62,6 +62,18 @@
   transform: translateY(-2px);
 }
 
+.RideCompleted-Button{
+  margin-top: 1rem;
+  background-color: rgb(232, 248, 3);
+    color: black;
+    border: none;
+    width: 8rem;
+    height: 1.5rem;
+    font-size: 17px;
+    text-decoration: none;
+    display: inline-block;
+}
+
 @media (min-width: 768px) {
   .button-37 {
     padding: 10px 30px;

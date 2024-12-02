@@ -18,8 +18,11 @@
     background-color: rgb(232, 248, 3);
     color: black;
     border: none;
-    width: 6rem;
-    height: 1.5rem;
+    width: 7rem;
+    height: 1.7rem;
+    font-size: 18px;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .Home-Intro{
@@ -107,10 +110,36 @@
     margin-top: -8rem;
 }
 
-.Part3ContactContainer{
-    margin-top: 2rem;
-    height: 2rem;
-    display: relative;
-    color: white;
-    background: rgb(18, 17, 22);
+.Part3ServicesContainer{
+  margin-top: 6rem;
+  color: white;
+}
+.ServicesContainer{
+  margin-top: 1rem;
+  display: flex;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15rem;
+  color:white;
+  justify-content: center;
+}
+.Car-Serivce{
+  margin-top: 1rem;
+  display: grid;
+  grid-column: 1fr 1fr;;
+  justify-content: center
+}
+.Car-Serivce-img{
+  width: 100px;
+  height: 100px;
+}
+.Car-Serivce-text{
+  margin-top: -1rem;
+}
+.Car-Serivce-img:hover {
+  transform: scale(1.2); 
+
+}
+
+.Part4ContactContainer{
+  height: 3rem;
 }

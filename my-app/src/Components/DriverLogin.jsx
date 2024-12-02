@@ -17,15 +17,11 @@ function DriverLogin() {
 async function requestAccount() {
     if (window.ethereum) {
         console.log("MetaMask Detected!");
-
         try {
             const accounts = await window.ethereum.request({
                 method: "eth_requestAccounts",
             });
-            
             console.log("Ethereum Accounts:", accounts);
-
-           
             axios({
                 method: 'post',
                 url: 'http://localhost:8080/login',
@@ -33,17 +29,12 @@ async function requestAccount() {
                 withCredentials: true, 
             })
             .then(response => {
-              
                 console.log("Response from backend:", response.data);
-
-                
                 navigate("/DriverMaps");
             })
             .catch(error => {
-                
                 console.error("Error during login:", error);
             });
-            
         } catch (error) {
             console.log("Error Connecting to MetaMask:", error);
         }
