@@ -259,6 +259,7 @@ function ClientLocation() {
             }
         });
     };
+    let n=0;
     const DriverSelected = async () => {
         console.log("Search Req:", SearchRequest);
     
@@ -284,20 +285,20 @@ function ClientLocation() {
                     getDriverInfo(response.data.driverId);
                 }
                 let RideComplionDistance;
-    
-                if (response.data.rideComplete) {
-                    if (response.data.paymentComplete === false) {
+                
+                if (response.data.rideComplete && n === 0) {
+                    if (!response.data.paymentComplete) {
                         if (clientData && driverData) {
                             RideComplionDistance = calculateDistance(
-                                clientData.latitude,
-                                clientData.longitude,
-                                clientData.ClientDestinationLatiture,
-                                clientData.ClientDestinationLongitude
+                                response.data.latitude,
+                                response.data.longitude,
+                                response.data.ClientDestinationLatiture,
+                                response.data.ClientDestinationLongitude
                             );
     
                             RideComplionDistance += calculateDistance(
-                                clientData.latitude,
-                                clientData.longitude,
+                                response.data.latitude,
+                                response.data.longitude,
                                 driverData.latitude,
                                 driverData.longitude
                             );
@@ -305,11 +306,94 @@ function ClientLocation() {
                             console.log("Ride Completion Distance:", RideComplionDistance);
                         }
     
-                        if (!transactionCheck) {
+                            let Res = response.data;
                             console.log("Initiating metaTransaction...");
-                            await metaTransaction(RideComplionDistance);
+                           
+
                             settransactionCheck(true);
-                        }
+                            console.log("Working here");
+                            if (window.ethereum) {
+                    
+                                const contractAddress = "0x178f2b8C24334DCF8E95aC73735b24A2A7B82A8B";
+                                const abi = ChainRideContract.abi;
+                                const web3 = new Web3(window.ethereum);
+                               
+                                const price =  0.00000754;
+                                const priceInWei = web3.utils.toWei(String(price), 'ether');  // Assuming the price is stored in clientData
+                                const distance = parseInt("12");
+                                const initialLongitude = parseInt(currentPosition.lng);  // Scaling for better precision
+                                const initialLatitude = parseInt(currentPosition.lat);
+                                const finalLongitude = parseInt(Res.ClientDestinationLongitude);
+                                const finalLatitude = parseInt(Res.ClientDestinationLatiture);
+                    
+                    
+                                console.log("Bug");
+                    
+                    
+                                const clientMetaAccount = "0x0AbEd4042cDBB24614d150F459Cb769D1F3EB8cb";  // Assuming client's address is stored in clientData
+                                const driverMetaAccount = "0x178f2b8C24334DCF8E95aC73735b24A2A7B82A8B";  // Assuming driver's address is available
+                               
+                                
+                                window.ethereum.enable();  
+                                const contract = new web3.eth.Contract(abi, contractAddress);
+                                
+                               await web3.eth.getAccounts().then(accounts => {
+                                    const signer = accounts[0]; 
+                                    n++;
+                                    contract.methods
+                                        .recordTrip(
+                                            priceInWei,
+                                            distance,
+                                            initialLongitude,
+                                            initialLatitude,
+                                            finalLongitude,
+                                            finalLatitude,
+                                            clientMetaAccount,
+                                            driverMetaAccount
+                                        )
+                                        .send({
+                                            from: signer,
+                                            value: web3.utils.toWei(0.00000756, 'ether'),  
+                                            gas: 2000000  
+                                            
+                                        })
+                                        .on('transactionHash', (hash) => {
+                                          
+                                            console.log(`Transaction hash: ${hash}`);
+                                            
+                                        })
+                                        .on('receipt', (receipt) => {
+                                            console.log('Transaction receipt:', receipt);
+                                          
+                                            
+                                                try {
+                                                     axios.post("http://localhost:8080/api/client-payment", { id: clientData.clientId });
+                                                    console.log("Payment recorded successfully.");
+                    
+                                                    
+                    
+                                                    setSearchActive(false);
+                                                } catch (err) {
+                                                    if (err.response) {
+                                                        console.error("Error response from server:", err.response.data);
+                                                    } else {
+                                                        console.error("Error making request:", err.message);
+                                                    }
+                                                }
+                                                
+                                            }
+                                        )
+                                        .on('error', (error) => {
+                                            console.error('Error recording trip:', error);
+                                        });
+                                }).catch(error => {
+                                    console.error('Error getting accounts:', error);
+                                });
+                            } else {
+                                console.log('Ethereum provider not found. Please install MetaMask or another Ethereum wallet.');
+                            }
+                           
+                        
                     }
                 }
     
@@ -329,77 +413,9 @@ function ClientLocation() {
     };
     
     
-    const metaTransaction = (RideDistance) =>
+    const metaTransaction = async (RideDistance , Res) =>
     {
-        if (window.ethereum) {
-
-            const contractAddress = "0x4867136F1acc48C2aD4C24e08AE5f75cA4962A6C";
-            const abi = ChainRideContract.abi;
-            const web3 = new Web3(window.ethereum);
-           
-            const price = clientData.cost;
-            const priceInWei = web3.utils.toWei(String(price), 'ether');  // Assuming the price is stored in clientData
-            const distance = parseInt(RideDistance);
-            const initialLongitude = parseInt(currentPosition.lng);  // Scaling for better precision
-            const initialLatitude = parseInt(currentPosition.lat);
-            const finalLongitude = parseInt(clientData.ClientDestinationLongitude);
-            const finalLatitude = parseInt(clientData.ClientDestinationLatiture);
-            const clientMetaAccount = clientData.metaAccount;  // Assuming client's address is stored in clientData
-            const driverMetaAccount = driverData.metaAccount;  // Assuming driver's address is available
-           
-            
-            window.ethereum.enable();  
-            const contract = new web3.eth.Contract(abi, contractAddress);
-            
-            web3.eth.getAccounts().then(accounts => {
-                const signer = accounts[0]; 
-                settransactionCheck(true);
-                contract.methods
-                    .recordTrip(
-                        priceInWei,
-                        distance,
-                        initialLongitude,
-                        initialLatitude,
-                        finalLongitude,
-                        finalLatitude,
-                        clientMetaAccount,
-                        driverMetaAccount
-                    )
-                    .send({
-                        from: signer,
-                        value: web3.utils.toWei(clientData.cost, 'ether'),  
-                        gas: 2000000  
-                    })
-                    .on('transactionHash', (hash) => {
-                        console.log(`Transaction hash: ${hash}`);
-                        
-                    })
-                    .on('receipt', (receipt) => {
-                        console.log('Transaction receipt:', receipt);
-                      
-                        
-                            try {
-                                 axios.post("http://localhost:8080/api/client-payment", { id: clientData.clientId });
-                                console.log("Payment recorded successfully.");
-                            } catch (err) {
-                                if (err.response) {
-                                    console.error("Error response from server:", err.response.data);
-                                } else {
-                                    console.error("Error making request:", err.message);
-                                }
-                            }
-                            
-                        }
-                    )
-                    .on('error', (error) => {
-                        console.error('Error recording trip:', error);
-                    });
-            }).catch(error => {
-                console.error('Error getting accounts:', error);
-            });
-        } else {
-            console.log('Ethereum provider not found. Please install MetaMask or another Ethereum wallet.');
-        }
+        
     }
 
     useEffect(() => {

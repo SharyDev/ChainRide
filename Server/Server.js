@@ -59,7 +59,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Function to get the next available driverId
+
 async function getNextDriverId() {
     const counter = await Counter.findOneAndUpdate(
         { name: "driverId" },
@@ -69,7 +69,7 @@ async function getNextDriverId() {
     return counter.seq;
 }
 
-// Function to get the next available clientId
+
 async function getNextClientId() {
     const counter = await Counter.findOneAndUpdate(
         { name: "clientId" },
@@ -79,11 +79,11 @@ async function getNextClientId() {
     return counter.seq;
 }
 
-// Route to save Client Location with auto-incremented clientId
+
 app.post('/api/save-client-location', async (req, res) => {
     const { clientId, latitude, longitude, ClientDestinationLatiture, ClientDestinationLongitude, metaAccount } = req.body;
     
-    // Ensure that the metaAccount is present
+  
     if (!metaAccount) {
         return res.status(400).json({ error: "metaAccount is required" });
     }
@@ -111,7 +111,7 @@ app.post('/api/save-client-location', async (req, res) => {
     }
 });
 
-// Route to save Driver Location with auto-incremented driverId
+
 app.post('/api/save-driver-location', async (req, res) => {
     const { latitude, longitude, driverId, metaAccount } = req.body;
 
@@ -122,12 +122,12 @@ app.post('/api/save-driver-location', async (req, res) => {
     try {
         let id = driverId;
 
-        // Generate a new driverId if not provided
+       
         if (!id) {
             id = await getNextDriverId();
         }
 
-        // Find and update the location, or create it if it doesn’t exist
+        
         const location = await DriverLocation.findOneAndUpdate(
             { driverId: id },
             { latitude, longitude, metaAccount },
@@ -140,7 +140,7 @@ app.post('/api/save-driver-location', async (req, res) => {
     }
 });
 
-// Endpoint to generate a new driverId
+
 app.get('/api/generate-driver-id', async (req, res) => {
     try {
         const driverId = await getNextDriverId();
@@ -150,7 +150,7 @@ app.get('/api/generate-driver-id', async (req, res) => {
     }
 });
 
-// Endpoint to generate a new clientId
+
 app.get('/api/generate-client-id', async (req, res) => {
     try {
         const clientId = await getNextClientId();
@@ -163,7 +163,7 @@ app.get('/api/generate-client-id', async (req, res) => {
 
 app.get('/api/get-all-drivers', async (req, res) => {
     try {
-        const drivers = await DriverLocation.find(); // Fetch all driver records
+        const drivers = await DriverLocation.find(); 
         res.status(200).json(drivers);
     } catch (error) {
         res.status(500).json({ message: "Error getting Drivers", error });
@@ -172,19 +172,19 @@ app.get('/api/get-all-drivers', async (req, res) => {
 
 app.get('/api/nearest-driver', async (req, res) => {
     try {
-        const { driverId } = req.query;  // Update to `driverId`
+        const { driverId } = req.query;  
         
         if (!driverId) {
             return res.status(400).json({ message: "Driver ID is required" });
         }
 
-        const driver = await DriverLocation.findOne({ driverId: driverId }); // Use `driverId` instead of `driverId2`
+        const driver = await DriverLocation.findOne({ driverId: driverId }); 
 
         if (!driver) {
             return res.status(404).json({ message: "Driver not found" });
         }
 
-        res.status(200).json(driver); // Return the found driver
+        res.status(200).json(driver);
     } catch (error) {
         res.status(500).json({ message: "Error getting driver", error });
     }
@@ -194,7 +194,7 @@ app.get('/api/nearest-driver', async (req, res) => {
 app.post('/api/set-DriverID', async (req, res) => {
     const { id, driverId, cost } = req.body;
 
-    // Check if both id and driverId are provided
+    
     if (!id || !driverId) {
         return res.status(400).json({ message: "Client ID and Driver ID are required." });
     }
@@ -206,7 +206,7 @@ app.post('/api/set-DriverID', async (req, res) => {
             return res.status(404).json({ message: "Client not found." });
         }
 
-        // Update client with driverId
+  
         client.driverId = driverId;
         await client.save();
 
@@ -220,7 +220,7 @@ app.post('/api/set-DriverID', async (req, res) => {
 app.post('/api/set-Received', async (req, res) => {
     const { id } = req.body;
 
-    // Check if both id and driverId are provided
+    
     if (!id) {
         return res.status(400).json({ message: "Client ID is required." });
     }
@@ -232,7 +232,7 @@ app.post('/api/set-Received', async (req, res) => {
             return res.status(404).json({ message: "Client not found." });
         }
 
-        // Update client with driverId
+        
         client.clientPicked = true;
         await client.save();
 
@@ -271,10 +271,10 @@ app.post('/api/driver-Accept', async (req, res) => {
 
 app.get('/api/Get-All-Clients', async (req, res) => {
     try {
-        // Modify the query to find clients where 'assigned' is false
+       
         const allClients = await ClientLocation.find({ assigned: false }); 
 
-        // Send the filtered clients back in the response
+      
         res.status(200).json(allClients); 
     } catch (error) {
         console.error("Error fetching all clients:", error);
@@ -284,7 +284,7 @@ app.get('/api/Get-All-Clients', async (req, res) => {
 
 
 app.get('/api/get-client', async (req, res) => {
-    const { clientId } = req.query;  // Get the clientId from query parameters
+    const { clientId } = req.query;  
     
     if (!clientId) {
         return res.status(400).json({ message: "clientId is required" });
@@ -297,7 +297,7 @@ app.get('/api/get-client', async (req, res) => {
             return res.status(404).json({ message: "Client not found" });
         }
 
-        res.status(200).json(client); // Return the found client
+        res.status(200).json(client); 
     } catch (error) {
         console.error("Error fetching client:", error);
         res.status(500).json({ message: "Error fetching client", error });
@@ -305,20 +305,20 @@ app.get('/api/get-client', async (req, res) => {
 });
 
 app.get('/api/get-driver', async (req, res) => {
-    const { driverId } = req.query;  // Get the driverId from query parameters
+    const { driverId } = req.query;   
 
     if (!driverId) {
         return res.status(400).json({ message: "driverId is required" });
     }
 
     try {
-        const driver = await DriverLocation.findOne({ driverId: driverId }); // Find driver by driverId
+        const driver = await DriverLocation.findOne({ driverId: driverId }); 
 
-        if (!driver) {  // Check if the driver exists in the database
+        if (!driver) {  
             return res.status(404).json({ message: "driver not found" });
         }
 
-        res.status(200).json(driver); // Return the found driver
+        res.status(200).json(driver);
     } catch (error) {
         console.error("Error fetching driver:", error);
         res.status(500).json({ message: "Error fetching driver", error });
@@ -331,7 +331,7 @@ app.get('/api/get-driver', async (req, res) => {
 app.post('/api/client-payment', async (req, res) => {
     const { id } = req.body;
 
-    // Check if both id and drivedriver-AccerId are provided
+  
     if (!id) {
         return res.status(400).json({ message: "Client ID is required." });
     }
@@ -343,7 +343,7 @@ app.post('/api/client-payment', async (req, res) => {
             return res.status(404).json({ message: "Client not found." });
         }
 
-        // Update client with driverId
+       
         client.paymentComplete = true;
         await client.save();
 
@@ -379,7 +379,7 @@ app.post("/api/set-Cost", async (req,res) => {
 app.post('/api/set-RideComplete', async (req, res) => {
     const { id } = req.body;
 
-    // Check if both id and driverId are provided
+    
     if (!id) {
         return res.status(400).json({ message: "Client ID is required." });
     }
@@ -391,7 +391,7 @@ app.post('/api/set-RideComplete', async (req, res) => {
             return res.status(404).json({ message: "Client not found." });
         }
 
-        // Update client with driverId
+        
         client.rideComplete = true;
         await client.save();
 
@@ -407,7 +407,7 @@ app.post('/api/set-RideComplete', async (req, res) => {
 app.post("/login", loginRoute);
 app.post("/Verify", cookieJwtAuth, verifiedRoute);
 
-// Start the server
+
 app.listen(Port, () => {
     console.log(`Server is running on http://localhost:${Port}`);
 });

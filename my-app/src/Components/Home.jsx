@@ -9,7 +9,7 @@ import CarImage from "../Assets/Images/Background.png";
 import { redirect, useHref, useNavigate } from "react-router-dom";
 import CarService from "../Assets/Images/Car-Service.png";
 import blockchainTransaction from "../Assets/Images/Blockchain-Transaction.png";
-import drivingLogo from "../Assets/Images/Driving.png";
+import drivingLogo from "../Assets/Images/Car-Sharing.png";
 
 
 function Home() {
